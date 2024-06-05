@@ -1,5 +1,5 @@
 resource "aws_key_pair" "access_key" {
-  key_name   = "akalaj-ln-key"
+  key_name   = "akalaj-min-key"
   public_key = var.sshkey # This key is provided via variables
 
   tags = {
@@ -40,6 +40,18 @@ resource "aws_security_group" "main_vpc_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
+    from_port   = 9001
+    to_port     = 9001
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 9000
+    to_port     = 9000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
     from_port   = 8 # the ICMP type number for 'Echo'
     to_port     = 0 # the ICMP code
     protocol    = "icmp"
@@ -57,4 +69,8 @@ resource "aws_security_group" "main_vpc_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+output "public_ip_address" {
+  value = aws_instance.bastion_host.public_ip
 }
