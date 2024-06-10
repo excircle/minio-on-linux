@@ -1,4 +1,7 @@
-# Create Server IP Variable
+# Optional Create Server IP Variable
+sudo apt update
+sudo apt install awscli -y 
+aws configure # Add credentials
 SERVER=$(aws ec2 describe-instances --query "Reservations[*].Instances[*].PublicIpAddress" --filters "Name=instance-state-name,Values=running" --output text)
 
 # Download MinIO Server Binary
@@ -9,12 +12,6 @@ chmod +x minio
 
 # Move into /usr/local/bin
 sudo mv minio /usr/local/bin/
-
-# Create MinIO Data Directory
-mkdir ~/minio
-
-# Start MinIO Server
-minio server ~/minio --console-address :9090 &
 
 # Download MinIO Command Line Client
 wget https://dl.min.io/client/mc/release/linux-amd64/mc
@@ -43,8 +40,34 @@ sudo mkdir /mnt/data
 # Change ownership of minio-user home dir
 sudo chown minio-user:minio-user /mnt/data
 
-# Change ownership of minio-user home dir
-sudo chown -R minio-user:minio-user /home/minio-user
+# Create MinIO Defaults File
+sudo cat << EOF > /etc/default/minio
+# MINIO_ROOT_USER and MINIO_ROOT_PASSWORD sets the root account for the MinIO server.
+# This user has unrestricted permissions to perform S3 and administrative API operations on any resource in the deployment.
+# Omit to use the default values 'minioadmin:minioadmin'.
+# MinIO recommends setting non-default values as a best practice, regardless of environment
+
+MINIO_ROOT_USER=myminioadmin
+MINIO_ROOT_PASSWORD=miniopass
+
+# MINIO_VOLUMES sets the storage volume or path to use for the MinIO server.
+
+MINIO_VOLUMES="/mnt/data"
+
+# MINIO_OPTS sets any additional commandline options to pass to the MinIO server.
+# For example, '--console-address :9001' sets the MinIO Console listen port
+MINIO_OPTS="--address 0.0.0.0:9000 --console-address 0.0.0.0:9001"
+
+# MINIO_SERVER_URL sets the hostname of the local machine for use with the MinIO Server
+# MinIO assumes your network control plane can correctly resolve this hostname to the local machine
+
+# Uncomment the following line and replace the value with the correct hostname for the local machine and port for the MinIO server (9000 by default).
+
+MINIO_SERVER_URL="http://${SERVER}:9000"
+EOF
+
+# Source defaults file
+source /etc/default/minio
 
 # Create a MinIO Service File
 sudo cat << EOF > /usr/lib/systemd/system/minio.service
@@ -87,30 +110,4 @@ SendSIGKILL=no
 WantedBy=multi-user.target
 
 # Built for ${project.name}-${project.version} (${project.name})
-EOF
-
-# Create MinIO Defaults File
-sudo cat << EOF > /etc/default/minio
-# MINIO_ROOT_USER and MINIO_ROOT_PASSWORD sets the root account for the MinIO server.
-# This user has unrestricted permissions to perform S3 and administrative API operations on any resource in the deployment.
-# Omit to use the default values 'minioadmin:minioadmin'.
-# MinIO recommends setting non-default values as a best practice, regardless of environment
-
-MINIO_ROOT_USER=myminioadmin
-MINIO_ROOT_PASSWORD=miniopass
-
-# MINIO_VOLUMES sets the storage volume or path to use for the MinIO server.
-
-MINIO_VOLUMES="/mnt/data"
-
-# MINIO_OPTS sets any additional commandline options to pass to the MinIO server.
-# For example, `--console-address :9001` sets the MinIO Console listen port
-MINIO_OPTS="--address 0.0.0.0:9000 --console-address 0.0.0.0:9001"
-
-# MINIO_SERVER_URL sets the hostname of the local machine for use with the MinIO Server
-# MinIO assumes your network control plane can correctly resolve this hostname to the local machine
-
-# Uncomment the following line and replace the value with the correct hostname for the local machine and port for the MinIO server (9000 by default).
-
-MINIO_SERVER_URL="${SERVER}:9000"
 EOF
