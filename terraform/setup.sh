@@ -1,8 +1,19 @@
-# Optional Create Server IP Variable
+#!/bin/bash
+
+# Create Install AWS CLI
 sudo apt update
-sudo apt install awscli -y 
-aws configure # Add credentials
-SERVER=$(aws ec2 describe-instances --query "Reservations[*].Instances[*].PublicIpAddress" --filters "Name=instance-state-name,Values=running" --output text)
+sudo apt install awscli tree jq -y 
+
+# Obtain Server IP
+INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
+SERVER=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --region $REGION  --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
+
+# Create MinIO XFS Mount
+sudo mkfs.xfs /dev/xvdh
+sudo mkdir -p /mnt/data
+sudo mount /dev/xvdh /mnt/data
+echo "/dev/xvdh /mnt/data xfs defaults,nofail 0 2" | sudo tee -a /etc/fstab
 
 # Download MinIO Server Binary
 wget https://dl.min.io/server/minio/release/linux-amd64/minio
@@ -22,9 +33,6 @@ chmod +x mc
 # Add to usr local
 sudo mv mc /usr/local/bin
 
-# Create Alias for your server
-mc alias set 'myminio' 'http://${SERVER}:9000' 'minioadmin' 'minioadmin'
-
 # Create minio-user group
 sudo groupadd -r minio-user
 
@@ -38,10 +46,10 @@ sudo mkdir -p /home/minio-user/.minio/certs
 sudo mkdir /mnt/data
 
 # Change ownership of minio-user home dir
-sudo chown minio-user:minio-user /mnt/data
+sudo chown -R minio-user:minio-user /mnt/data
 
 # Create MinIO Defaults File
-sudo cat << EOF > /etc/default/minio
+sudo tee /etc/default/minio > /dev/null << EOF
 # MINIO_ROOT_USER and MINIO_ROOT_PASSWORD sets the root account for the MinIO server.
 # This user has unrestricted permissions to perform S3 and administrative API operations on any resource in the deployment.
 # Omit to use the default values 'minioadmin:minioadmin'.
@@ -70,7 +78,7 @@ EOF
 source /etc/default/minio
 
 # Create a MinIO Service File
-sudo cat << EOF > /usr/lib/systemd/system/minio.service
+sudo tee /usr/lib/systemd/system/minio.service > /dev/null << 'EOF'
 [Unit]
 Description=MinIO
 Documentation=https://docs.min.io
@@ -89,7 +97,7 @@ Group=minio-user
 ProtectProc=invisible
 
 EnvironmentFile=/etc/default/minio
-ExecStartPre=/bin/bash -c "if [ -z \"${MINIO_VOLUMES}\" ]; then echo \"Variable MINIO_VOLUMES not set in /etc/default/minio\"; exit 1; fi"
+ExecStartPre=/bin/bash -c "if [ -z \"${MINIO_VOLUMES}\" ]; then echo 'Variable MINIO_VOLUMES not set in /etc/default/minio'; exit 1; fi"
 ExecStart=/usr/local/bin/minio server $MINIO_OPTS $MINIO_VOLUMES
 
 # Let systemd restart this service always
