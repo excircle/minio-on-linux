@@ -44,3 +44,20 @@ The Terraform projects contained in this repo leverage AWS for infrastructure an
 - `mc` binary
 - `/etc/default/minio` config file
 - `minio.service` SystemD file
+
+# Installation & Usage
+
+The following steps outline a high-level basic usage - ideal for running on a local laptop.
+
+#### NOTE: These instructions assume you have [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli) installed & [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) configured
+
+| Steps | Commands |
+| - | - |
+| Clone Repo Locally | `git clone https://github.com/excircle/minio-on-linux.git` |
+| Change Into `terraform` Directory | `cd minio-on-linux/terraform` |
+| Initialize Terraform | `terraform init` |
+| Provide Public SSH Key | `export TF_VAR_sshkey=$(cat ~/.ssh/your_public_key.pub)` |
+| Create Terraform Execution Plan | `terraform plan -out tfplan` |
+| Execute Plan | `terraform apply tfplan` |
+| SSH To Host | `ssh -i ~/.ssh/your_public_key ubuntu@34.222.0.0` |
+| Start MinIO | `sudo systemctl start minio` |
