@@ -11,9 +11,9 @@ resource "aws_key_pair" "access_key" {
 }
 
 resource "aws_instance" "minio_host" {
-  for_each = toset(["one"]) # Creates a EC2 instance per string provided
+  for_each = toset(["two"]) # Creates a EC2 instance per string provided
 
-  ami                         = "ami-03c983f9003cb9cd1" # us-west-2 AMI | Ubuntu 22.04.4 LTS (Jammy Jellyfish)
+  ami                         = "ami-0423fca164888b941" # us-west-2 AMI | RedHat 9.4 (Plow)
   instance_type               = "t2.micro"
   key_name                    = aws_key_pair.access_key.key_name
   associate_public_ip_address = true
