@@ -9,7 +9,7 @@ on:
       mode:
         description: 'Conditional Execution'
         required: true
-        default: 'apply'
+        default: apply
         type: choice
         options:
           - apply
@@ -28,4 +28,4 @@ jobs:
       MYVAR: ${{ github.event.inputs.mode == 'apply' }}
     steps:
       - name: echo MYVAR
-        run: echo "DEBUG ${MYVAR}"
+        run: echo "$MYVAR"
