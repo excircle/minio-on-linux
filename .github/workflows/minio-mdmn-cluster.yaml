@@ -18,10 +18,4 @@ jobs:
     if: ${{ github.event_name == 'push' || github.event.inputs.destroy == 'false' }}
     steps:
       - name: Say Apply
-        run: echo "DESTROY == false"
-  destroy:
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' || github.event.inputs.destroy == 'true' }}
-    steps:
-      - name: Say Apply
-        run: echo "DESTROY == true"
+        run: echo ${{ github.event.inputs.destroy }}
