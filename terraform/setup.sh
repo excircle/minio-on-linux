@@ -55,8 +55,8 @@ sudo tee /etc/default/minio > /dev/null << EOF
 # Omit to use the default values 'minioadmin:minioadmin'.
 # MinIO recommends setting non-default values as a best practice, regardless of environment
 
-MINIO_ROOT_USER=myminioadmin
-MINIO_ROOT_PASSWORD=miniopass
+MINIO_ROOT_USER=minio
+MINIO_ROOT_PASSWORD=minio
 
 # MINIO_VOLUMES sets the storage volume or path to use for the MinIO server.
 
