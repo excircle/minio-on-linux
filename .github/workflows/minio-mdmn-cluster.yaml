@@ -22,3 +22,10 @@ jobs:
     steps:
       - name: Say Apply
         run: echo "MODE == apply"
+  checker:
+    runs-on: ubuntu-latest
+    env:
+      MYVAR: ${{ github.event.inputs.mode == 'apply' }}
+    steps:
+      - name: echo MYVAR
+        run: echo "DEBUG ${MYVAR}"
