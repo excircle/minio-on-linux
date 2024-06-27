@@ -4,13 +4,14 @@ on:
   push:
     branches:
       - mdmn-cluster
+
 env:
   MODE: destroy
 
 jobs:
   deploy:
-    if: ${{ env.MODE == 'apply' }}
     runs-on: ubuntu-latest
+    if: ${{ env.MODE == 'apply' }}
     env:
       AWS_DEFAULT_REGION: "us-west-2"
     steps:
@@ -32,21 +33,3 @@ jobs:
           aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
           aws configure set region $AWS_DEFAULT_REGION
-
-      - name: Initialize Terraform
-        working-directory: ./terraform
-        run: terraform init
-
-      - name: Export SSH Key
-        run: echo "TF_VAR_sshkey=${{ secrets.SSHKEY }}" >> $GITHUB_ENV
-
-      - name: Apply Terraform
-        working-directory: ./terraform
-        run: terraform apply -auto-approve
-
-      - name: Sleep for 3 minutes
-        run: sleep 30
-
-      - name: Terraform Destroy
-        working-directory: ./terraform
-        run: terraform destroy -auto-approve
