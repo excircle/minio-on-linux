@@ -1,21 +1,16 @@
-name: MinIO Deployment
+name: Conditional Workflow
 
-on:
-  push:
-    branches:
-      - mdmn-cluster
-  workflow_dispatch:
-    inputs:
-      destroy:
-        description: 'Destroy project'
-        required: true
-        default: true
-        type: boolean    
+on: [push]
+
+env:
+  RUN_JOB: true
 
 jobs:
-  deploy:
+  build:
+    if: env.RUN_JOB == 'true'
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' || github.event.inputs.destroy == 'false' }}
     steps:
-      - name: Say Apply
-        run: echo ${{ github.event.inputs.destroy }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Run a script
+        run: echo "Running the build job because RUN_JOB is true"
