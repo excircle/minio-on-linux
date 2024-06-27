@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'Conditonal Execution'
+        description: 'Conditional Execution'
         required: true
         default: 'apply'
         type: choice
@@ -15,14 +15,10 @@ on:
           - apply
           - destroy
 
-env:
-  MODE: ${{ github.event.inputs.mode }}
-
 jobs:
   deploy:
-    if: env.MODE == 'apply'
     runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.mode == 'apply' }}
     steps:
       - name: Say Apply
-        if: ${{ env.MODE == 'apply' }}
         run: echo "MODE == apply"
