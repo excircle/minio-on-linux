@@ -9,7 +9,7 @@ on:
       destroy:
         description: 'Destroy project'
         required: true
-        default: false
+        default: true
         type: boolean    
 
 jobs:
@@ -19,3 +19,9 @@ jobs:
     steps:
       - name: Say Apply
         run: echo "DESTROY == false"
+  destroy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' || github.event.inputs.destroy == 'false' }}
+    steps:
+      - name: Say Apply
+        run: echo "DESTROY == true"
