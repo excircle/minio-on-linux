@@ -1,6 +1,9 @@
-name: Conditional env variable
+name: MinIO Deployment
 
-on: workflow_dispatch
+on:
+  push:
+    branches:
+      - mdmn-cluster
 
 env:
   DAY_OF_WEEK: Monday
