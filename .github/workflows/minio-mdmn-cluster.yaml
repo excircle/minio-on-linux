@@ -4,18 +4,25 @@ on:
   push:
     branches:
       - mdmn-cluster
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Conditonal Execution'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - apply
+          - destroy
 
 env:
-  DAY_OF_WEEK: Monday
+  MODE: ${{ github.event.inputs.mode }}
 
 jobs:
-  greeting_job:
+  deploy:
+    if: env.MODE == 'apply'
     runs-on: ubuntu-latest
-    env:
-      Greeting: Hello
     steps:
-      - name: "Say Hello Mona it's Monday"
-        if: ${{ env.DAY_OF_WEEK == 'Monday' }}
-        run: echo "$Greeting $First_Name. Today is $DAY_OF_WEEK!"
-        env:
-          First_Name: Mona
+      - name: Say Apply
+        if: ${{ env.MODE == 'apply' }}
+        run: echo "MODE == apply"
