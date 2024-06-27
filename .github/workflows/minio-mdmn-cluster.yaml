@@ -25,7 +25,7 @@ jobs:
   checker:
     runs-on: ubuntu-latest
     env:
-      MYVAR: ${{ github.event.inputs.mode == 'apply' }}
+      MYVAR: ${{ github.event.inputs.mode }}
     steps:
       - name: echo MYVAR
         run: echo "$MYVAR"
