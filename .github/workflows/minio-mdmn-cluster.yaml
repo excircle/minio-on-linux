@@ -9,7 +9,7 @@ env:
 
 jobs:
   deploy:
-    if: env.MODE == 'apply'
+    if: ${{ env.MODE == 'apply' }}
     runs-on: ubuntu-latest
     env:
       AWS_DEFAULT_REGION: "us-west-2"
