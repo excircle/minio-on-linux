@@ -2,6 +2,9 @@ name: Conditional Workflow
 
 on: [push]
 
+env:
+  destroy: false
+
 jobs:
   set-condition:
     runs-on: ubuntu-latest
@@ -11,10 +14,11 @@ jobs:
       - name: Set condition
         id: set-output
         run: |
-          echo "::set-output name=RUN_JOB::true"  # or some conditional logic here
+          echo "::set-output name=RUN_JOB::${destroy}"  # or some conditional logic here
 
   build:
-    if: needs.set-condition.outputs.run-job == 'true'
+    needs: set-condition
+    if: needs.set-condition.outputs.run-job == 'false'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -22,7 +26,8 @@ jobs:
       - name: Run a script
         run: echo "Running the build job because condition is met"
   destroy:
-    if: needs.set-condition.outputs.run-job == 'false'
+    needs: set-condition
+    if: needs.set-condition.outputs.run-job == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
