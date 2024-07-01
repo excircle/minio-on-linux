@@ -59,8 +59,6 @@ jobs:
         run: terraform init
       - name: Export SSH Key
         run: echo "TF_VAR_sshkey=${{ secrets.SSHKEY }}" >> $GITHUB_ENV
-      - name: Check STATE_EXISTS
-        run: echo ${{ env.STATE_EXISTS }}"
       # 2.) STATE_EXISTS is false, so we need to create a new Terraform State File & save it as a GitHub Secret
       - name: Apply New Terraform
         if: ${{ env.STATE_EXISTS == 'false' }}
