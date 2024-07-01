@@ -18,7 +18,14 @@ jobs:
         id: set-output
         run: |
           echo "RUN_JOB=${{ env.destroy }}" >> $GITHUB_OUTPUT
-      # Step to check if TF_STATE_FILE does not exist and set STATE_EXISTS accordingly
+
+  build:
+    needs: set-condition
+    if: needs.set-condition.outputs.run-job == 'false'
+    runs-on: ubuntu-latest
+    env:
+      AWS_DEFAULT_REGION: "us-west-2"
+    steps:
       - name: "Check if TF_STATE_FILE does not exist"
         env: 
             super_secret: ${{ secrets.TF_STATE_FILE }}
@@ -30,14 +37,6 @@ jobs:
             echo "TF_STATE_FILE is set"
             echo "STATE_EXISTS=true" >> $GITHUB_ENV
           fi
-
-  build:
-    needs: set-condition
-    if: needs.set-condition.outputs.run-job == 'false'
-    runs-on: ubuntu-latest
-    env:
-      AWS_DEFAULT_REGION: "us-west-2"
-    steps:
       # 1.) Set up AWS credentials & Terraform
       - name: Configure AWS credentials
         env:
