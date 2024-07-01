@@ -72,12 +72,12 @@ jobs:
           value: terraform/terraform.tfstate
           pa_token: ${{ secrets.PA_TOKEN }}
       # 3.) STATE_EXISTS is true, so we need to use the State File
-      - name: Use Terraform State File
+      - name: Place State File into GitHub Environment
         if: ${{ env.STATE_EXISTS == 'true' }}
         run: echo "TF_STATE_FILE=${{ secrets.TF_STATE_FILE }}" >> $GITHUB_ENV
-      - name: Write TF_STATE_FILE to file
+      - name: Write State to file
         if: ${{ env.STATE_EXISTS == 'true' }}
-        run: echo -e "${{ secrets.TF_STATE_FILE }}" > terraform/terraform.tfstate
+        run: echo -e "${{ secrets.TF_STATE_FILE }}"
       - name: Apply Existing Terraform
         if: ${{ env.STATE_EXISTS == 'true' }}
         working-directory: ./terraform
