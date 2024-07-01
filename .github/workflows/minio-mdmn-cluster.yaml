@@ -26,8 +26,16 @@ jobs:
     env:
       AWS_DEFAULT_REGION: "us-west-2"
     steps:
-      - name: Python version check
-        run: python --version
+      - name: "check if TF_STATE_FILE DOES NOT exists"
+        env: 
+            super_secret: ${{ secrets.TF_STATE_FILE }}
+        if: ${{ env.super_secret == '' }}
+        run: "echo 'TF_STATE_FILE is not set'"
+      - name: "check if TF_STATE_FILE DOES exists"
+        env: 
+            super_secret: ${{ secrets.TF_STATE_FILE }}
+        if: ${{ env.super_secret == '' }}
+        run: "echo 'TF_STATE_FILE DOES EXIST'"
 
   destroy:
     needs: set-condition
