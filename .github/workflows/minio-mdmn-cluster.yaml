@@ -26,6 +26,7 @@ jobs:
     env:
       AWS_DEFAULT_REGION: "us-west-2"
     steps:
+      # Populate Terraform State File From Scratch
       - name: "check if TF_STATE_FILE DOES NOT exists"
         env: 
             super_secret: ${{ secrets.TF_STATE_FILE }}
