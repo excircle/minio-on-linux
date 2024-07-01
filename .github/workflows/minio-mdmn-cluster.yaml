@@ -59,6 +59,7 @@ jobs:
         run: terraform init
       - name: Export SSH Key
         run: echo "TF_VAR_sshkey=${{ secrets.SSHKEY }}" >> $GITHUB_ENV
+
       # 2.) STATE_EXISTS is false, so we need to create a new Terraform State File & save it as a GitHub Secret
       - name: Apply New Terraform
         if: ${{ env.STATE_EXISTS == 'false' }}
@@ -72,12 +73,12 @@ jobs:
           value: terraform/terraform.tfstate
           pa_token: ${{ secrets.PA_TOKEN }}
       # 3.) STATE_EXISTS is true, so we need to use the State File
-      - name: Place State File into GitHub Environment
+      - name: Use Terraform State File
         if: ${{ env.STATE_EXISTS == 'true' }}
         run: echo "TF_STATE_FILE=${{ secrets.TF_STATE_FILE }}" >> $GITHUB_ENV
-      - name: Write State to file
+      - name: Write TF_STATE_FILE to file
         if: ${{ env.STATE_EXISTS == 'true' }}
-        run: echo "${{ secrets.TF_STATE_FILE }}" > terraform/terraform.tfstate.txt && cat terraform/terraform.tfstate.txt
+        run: echo "${{ secrets.DEBUG_TF_STATE_FILE }}" > terraform/terraform.tfstate.txt && cat terraform/terraform.tfstate.txt
       - name: Apply Existing Terraform
         if: ${{ env.STATE_EXISTS == 'true' }}
         working-directory: ./terraform
