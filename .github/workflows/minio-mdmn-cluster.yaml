@@ -77,7 +77,7 @@ jobs:
         run: echo "TF_STATE_FILE=${{ secrets.TF_STATE_FILE }}" >> $GITHUB_ENV
       - name: Write State to file
         if: ${{ env.STATE_EXISTS == 'true' }}
-        run: echo "${{ secrets.TF_STATE_FILE }}" > terraform/terraform.tfstate && cat terraform/terraform.tfstate
+        run: echo "${{ secrets.TF_STATE_FILE }}" > terraform/terraform.tfstate.txt && cat terraform/terraform.tfstate.txt
       - name: Apply Existing Terraform
         if: ${{ env.STATE_EXISTS == 'true' }}
         working-directory: ./terraform
