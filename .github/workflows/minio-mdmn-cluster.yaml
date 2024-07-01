@@ -31,11 +31,12 @@ jobs:
             super_secret: ${{ secrets.TF_STATE_FILE }}
         if: ${{ env.super_secret == '' }}
         run: "echo 'TF_STATE_FILE is not set'"
-      - name: "check if TF_STATE_FILE DOES exists"
+      - name: "check if TF_STATE_FILE exists"
         env: 
             super_secret: ${{ secrets.TF_STATE_FILE }}
-        if: ${{ env.super_secret == '' }}
+        if: ${{ env.super_secret != '' }}
         run: "echo 'TF_STATE_FILE DOES EXIST'"
+
 
   destroy:
     needs: set-condition
