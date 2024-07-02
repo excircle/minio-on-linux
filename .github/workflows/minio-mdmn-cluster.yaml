@@ -123,7 +123,9 @@ jobs:
           pa_token: ${{ secrets.PA_TOKEN }}
       
       - name: Write TF_STATE_FILE to file
-        run: printf "${{ steps.get_tf_content.outputs.tf_content }}" > ./example.txt
+        env:
+          TF_CONTENT: ${{ steps.get_tf_content.outputs.tf_content }}
+        run: printf "${{ env.TF_CONTENT }}" > ./example.txt
         
       - name: Check Size
         run: ls -lah ./example.txt
