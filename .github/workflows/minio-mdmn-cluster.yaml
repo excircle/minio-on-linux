@@ -115,7 +115,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ubuntu #<- Define the branch you wish to use.
-          
+
       - name: Create variable 'TF_CONTENT' 
         id: get_tf_content
         run: echo "::set-output name=tf_content::$(cat terraform/ec2.tf)"
@@ -128,7 +128,7 @@ jobs:
           pa_token: ${{ secrets.PA_TOKEN }}
       
       - name: Write TF_STATE_FILE to file
-        run: printf "${{ steps.get_tf_content.outputs.tf_content }}" > ./example.txt
+        run: echo -e "${{ steps.get_tf_content.outputs.tf_content }}" > ./example.txt
         
       - name: Check Size
         run: ls -lah ./example.txt
