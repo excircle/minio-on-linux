@@ -124,7 +124,10 @@ jobs:
           } >> "$GITHUB_ENV"
       
       - name: Write TF_STATE_FILE to file
-        run: echo -e "${{ env.tf_content }}" > ./example.txt
+        run: |
+         sudo tee ./example.txt > /dev/null << 'EOF'
+          ${{ env.tf_content }}
+         EOF
         
       - name: Check Size
         run: ls -lah ./example.txt
