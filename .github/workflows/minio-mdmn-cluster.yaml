@@ -91,6 +91,8 @@ jobs:
     needs: set-condition
     if: needs.set-condition.outputs.run-job == 'true'
     runs-on: ubuntu-latest
+    env:
+      AWS_DEFAULT_REGION: "us-west-2"
     steps:
       - name: "Check if TF_STATE_FILE does not exist"
         env: 
