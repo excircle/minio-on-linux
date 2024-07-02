@@ -121,15 +121,19 @@ jobs:
           else
             echo "TF_STATE_FILE is set"
             echo "STATE_EXISTS=true" >> $GITHUB_ENV
-          fi     
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          ref: ubuntu #<- Define the branch you wish to use.
-      - name: Test Secret Save
+          fi
+      - name: Use Terraform State File
         if: ${{ env.STATE_EXISTS == 'true' }}
-        uses: gliech/create-github-secret-action@v1
-        with:
-          name: EC2
-          value: terraform/ec2.tf
-          pa_token: ${{ secrets.PA_TOKEN }}
+        run: echo "TF_STATE_FILE=${{ secrets.EC2 }}" >> $GITHUB_ENV
+
+      - name: Write TF_STATE_FILE to file
+        if: ${{ env.STATE_EXISTS == 'true' }}
+        run: echo "${{ secrets.EC2 }}" > ./example.txt
+
+      - name: Check Size
+        if: ${{ env.STATE_EXISTS == 'true' }}
+        run: ls -lah ./example.txt
+
+      - name: Check wc length
+        if: ${{ env.STATE_EXISTS == 'true' }}
+        run: cat example.txt | wc -l
