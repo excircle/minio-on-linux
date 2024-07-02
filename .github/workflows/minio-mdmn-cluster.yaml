@@ -80,7 +80,6 @@ jobs:
         if: ${{ env.STATE_EXISTS == 'true' }}
         run: echo "${{ secrets.DEBUG_TF_STATE_FILE }}" > terraform/terraform.tfstate
       - name: Upload Terraform State File
-        if: ${{ env.STATE_EXISTS == 'true' }}
         uses: actions/upload-artifact@v3
         with:
           name: terraform-tfstate
