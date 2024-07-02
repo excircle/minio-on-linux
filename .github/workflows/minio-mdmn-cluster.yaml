@@ -111,6 +111,11 @@ jobs:
     if: needs.set-condition.outputs.run-job == 'true'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: ubuntu #<- Define the branch you wish to use.
+          
       - name: Create variable 'TF_CONTENT' 
         id: get_tf_content
         run: echo "::set-output name=tf_content::$(cat terraform/ec2.tf)"
@@ -123,9 +128,7 @@ jobs:
           pa_token: ${{ secrets.PA_TOKEN }}
       
       - name: Write TF_STATE_FILE to file
-        env:
-          TF_CONTENT: ${{ steps.get_tf_content.outputs.tf_content }}
-        run: printf "${{ env.TF_CONTENT }}" > ./example.txt
+        run: printf "${{ steps.get_tf_content.outputs.tf_content }}" > ./example.txt
         
       - name: Check Size
         run: ls -lah ./example.txt
