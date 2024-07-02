@@ -6,7 +6,7 @@ on:
       - mdmn-cluster
 
 env:
-  destroy: false
+  destroy: true
 
 jobs:
   set-condition:
@@ -69,7 +69,6 @@ jobs:
         working-directory: ./terraform
         run: terraform apply -auto-approve
 
-      # Read state File Here
       - name: Read State File into Env Var
         if: ${{ env.STATE_EXISTS == 'false' }}
         id: read_tf_file
@@ -80,7 +79,6 @@ jobs:
             echo EOF
           } >> "$GITHUB_ENV"
 
-      # Save state
       - name: Save State File As Secret
         if: ${{ env.STATE_EXISTS == 'false' }}
         uses: gliech/create-github-secret-action@v1
@@ -89,47 +87,57 @@ jobs:
           value: ${{ env.tf_content }}
           pa_token: ${{ secrets.PA_TOKEN }}
 
-      # archive state file
-      - name: Upload Terraform State File
-        if: ${{ env.STATE_EXISTS == 'false' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: terraform.tfstate
-          path: terraform/terraform.tfstate
-
   destroy:
     needs: set-condition
     if: needs.set-condition.outputs.run-job == 'true'
     runs-on: ubuntu-latest
     steps:
+      - name: "Check if TF_STATE_FILE does not exist"
+        env: 
+            super_secret: ${{ secrets.TF_STATE_FILE }}
+        run: |
+          if [ -z "${{ env.super_secret }}" ]; then
+            echo "TF_STATE_FILE is not set"
+            echo "STATE_EXISTS=false" >> $GITHUB_ENV
+          else
+            echo "TF_STATE_FILE is set"
+            echo "STATE_EXISTS=true" >> $GITHUB_ENV
+          fi
+
       - name: Checkout code
+        if: ${{ env.STATE_EXISTS == 'true' }}
         uses: actions/checkout@v2
         with:
           ref: ubuntu #<- Define the branch you wish to use.
-        
-      - name: Set the value in bash
-        id: read_tf_file
-        run: |
-          {
-            echo 'tf_content<<EOF'
-            cat terraform/ec2.tf
-            echo EOF
-          } >> "$GITHUB_ENV"
       
       - name: Write TF_STATE_FILE to file
+        if: ${{ env.STATE_EXISTS == 'true' }}
         run: |
-         sudo tee ./example.txt > /dev/null << 'EOF'
-          ${{ env.tf_content }}
+         sudo tee terraform/terraform.tfstate > /dev/null << 'EOF'
+          ${{ secrets.TF_STATE_FILE }}
          EOF
-        
-      - name: Check Size
-        run: ls -lah ./example.txt
 
-      - name: Check wc length
-        run: cat example.txt | wc -l
-
-      - name: Upload Terraform State File
-        uses: actions/upload-artifact@v3
+      - name: Set up Terraform
+        if: ${{ env.STATE_EXISTS == 'true' }}
+        uses: hashicorp/setup-terraform@v1
         with:
-          name: example.txt
-          path: ./example.txt
+          terraform_version: 1.1.7
+
+      - name: Initialize Terraform
+        if: ${{ env.STATE_EXISTS == 'true' }}
+        working-directory: ./terraform
+        run: terraform init
+
+      - name: Export SSH Key
+        if: ${{ env.STATE_EXISTS == 'true' }}
+        run: echo "TF_VAR_sshkey=${{ secrets.SSHKEY }}" >> $GITHUB_ENV
+
+      - name: Apply New Terraform
+        if: ${{ env.STATE_EXISTS == 'true' }}
+        working-directory: ./terraform
+        run: terraform destroy -auto-approve
+
+      - name: Apply New Terraform
+        if: ${{ env.STATE_EXISTS == 'true' }}
+        working-directory: ./terraform
+        run: terraform state list | wc -l
