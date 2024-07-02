@@ -118,13 +118,13 @@ jobs:
         id: read_tf_file
         run: |
           {
-            echo 'JSON_RESPONSE<<EOF'
+            echo 'tf_content<<EOF'
             cat terraform/ec2.tf
             echo EOF
           } >> "$GITHUB_ENV"
       
       - name: Write TF_STATE_FILE to file
-        run: echo -e "${{ env.tf_state_content }}" > ./example.txt
+        run: echo -e "${{ env.tf_content }}" > ./example.txt
         
       - name: Check Size
         run: ls -lah ./example.txt
