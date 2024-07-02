@@ -135,7 +135,7 @@ jobs:
       - name: Apply New Terraform
         if: ${{ env.STATE_EXISTS == 'true' }}
         working-directory: ./terraform
-        run: terraform destroy -auto-approve
+        run: terraform destroy -auto-approve -lock=false
 
       - name: Apply New Terraform
         if: ${{ env.STATE_EXISTS == 'true' }}
