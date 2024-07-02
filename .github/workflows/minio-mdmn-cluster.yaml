@@ -116,14 +116,23 @@ jobs:
 
       - name: Create variable 'TF_CONTENT' 
         id: get_tf_content
-        run: echo "tf_content=$(cat terraform/ec2.tf)" >> $GITHUB_OUTPUT
+        run: echo "::set-output name=tf_content::$(cat terraform/ec2.tf)"
+        
+      - name: Save State File As Secret
+        uses: gliech/create-github-secret-action@v1
+        with:
+          name: TF_STATE_FILE2
+          value: ${{ steps.get_tf_content.outputs.tf_content }}
+          pa_token: ${{ secrets.PA_TOKEN }}
       
       - name: Write TF_STATE_FILE to file
-        run: |
-          cat <<EOF > ./example.txt
-          ${{ steps.get_tf_content.outputs.tf_content }}
-          EOF
-
+        uses: mobiledevops/secret-to-file-action@v1
+        with:
+          base64-encoded-secret: ${{ steps.get_tf_content.outputs.tf_content }}
+          filename: "./example.txt"
+          is-executable: false
+      - run: echo -e "${{ steps.get_tf_content.outputs.tf_content }}" > ./example.txt
+        
       - name: Check Size
         run: ls -lah ./example.txt
 
