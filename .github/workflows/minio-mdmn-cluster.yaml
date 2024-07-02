@@ -6,7 +6,7 @@ on:
       - mdmn-cluster
 
 env:
-  destroy: false
+  destroy: true
 
 jobs:
   set-condition:
@@ -46,17 +46,21 @@ jobs:
           aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
           aws configure set region $AWS_DEFAULT_REGION
+
       - name: Checkout code
         uses: actions/checkout@v2
         with:
           ref: ubuntu #<- Define the branch you wish to use.
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.1.7
+
       - name: Initialize Terraform
         working-directory: ./terraform
         run: terraform init
+
       - name: Export SSH Key
         run: echo "TF_VAR_sshkey=${{ secrets.SSHKEY }}" >> $GITHUB_ENV
 
@@ -65,6 +69,7 @@ jobs:
         if: ${{ env.STATE_EXISTS == 'false' }}
         working-directory: ./terraform
         run: terraform apply -auto-approve
+
       - name: Save State File As Secret
         if: ${{ env.STATE_EXISTS == 'false' }}
         uses: gliech/create-github-secret-action@v1
@@ -72,22 +77,27 @@ jobs:
           name: TF_STATE_FILE
           value: terraform/terraform.tfstate
           pa_token: ${{ secrets.PA_TOKEN }}
+
       # 3.) STATE_EXISTS is true, so we need to use the State File
       - name: Use Terraform State File
         if: ${{ env.STATE_EXISTS == 'true' }}
         run: echo "TF_STATE_FILE=${{ secrets.TF_STATE_FILE }}" >> $GITHUB_ENV
+
       - name: Write TF_STATE_FILE to file
         if: ${{ env.STATE_EXISTS == 'true' }}
         run: echo "${{ secrets.DEBUG_TF_STATE_FILE }}" > terraform/terraform.tfstate
+
       - name: Upload Terraform State File
         uses: actions/upload-artifact@v3
         with:
           name: terraform-tfstate
           path: terraform/terraform.tfstate
+
       - name: Apply Existing Terraform
         if: ${{ env.STATE_EXISTS == 'true' }}
         working-directory: ./terraform
         run: terraform apply -auto-approve
+
       - name: Update State File Secret
         if: ${{ env.STATE_EXISTS == 'true' }}
         uses: gliech/create-github-secret-action@v1
@@ -104,4 +114,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Run a script
+
         run: echo "Running the DESTROY job because condition is met"
+      - name: Use Terraform State File
+        if: ${{ env.STATE_EXISTS == 'true' }}
+        run: echo "TF_STATE_FILE=${{ secrets.TF_STATE_FILE }}" >> $GITHUB_ENV
+
+      - name: Write TF_STATE_FILE to file
+        if: ${{ env.STATE_EXISTS == 'true' }}
+        run: echo "${{ secrets.DEBUG_TF_STATE_FILE }}" > terraform/terraform.tfstate
+
+      - name: Check Size
+        if: ${{ env.STATE_EXISTS == 'true' }}
+        run: ls -lah terraform/terraform.tfstate
+
+      - name: Check wc length
+        if: ${{ env.STATE_EXISTS == 'true' }}
+        run: cat terraform/terraform.tfstate | wc -l
