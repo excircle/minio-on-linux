@@ -120,8 +120,8 @@ jobs:
         id: read_tf_state
         run: |
           content=$(cat terraform/ec2.tf)
-          echo "tf_state_content=$content" >> $GITHUB_ENV
-          echo "tf_state_content=$content" >> $GITHUB_OUTPUT
+          echo -e "tf_state_content=$content" >> $GITHUB_ENV
+          echo -e "tf_state_content=$content" >> $GITHUB_OUTPUT
         
       - name: Update State File Secret
         uses: gliech/create-github-secret-action@v1
