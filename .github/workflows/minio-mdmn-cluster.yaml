@@ -6,7 +6,7 @@ on:
       - mdmn-cluster
 
 env:
-  destroy: true
+  destroy: false
 
 jobs:
   set-condition:
@@ -45,6 +45,7 @@ jobs:
           aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
           aws configure set region $AWS_DEFAULT_REGION
+
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -68,13 +69,33 @@ jobs:
         working-directory: ./terraform
         run: terraform apply -auto-approve
 
+      # Read state File Here
+      - name: Read State File into Env Var
+        if: ${{ env.STATE_EXISTS == 'false' }}
+        id: read_tf_file
+        run: |
+          {
+            echo 'tf_content<<EOF'
+            cat terraform/terraform.tfstate
+            echo EOF
+          } >> "$GITHUB_ENV"
+
+      # Save state
       - name: Save State File As Secret
         if: ${{ env.STATE_EXISTS == 'false' }}
         uses: gliech/create-github-secret-action@v1
         with:
           name: TF_STATE_FILE
-          value: terraform/terraform.tfstate
+          value: ${{ env.tf_content }}
           pa_token: ${{ secrets.PA_TOKEN }}
+
+      # archive state file
+      - name: Upload Terraform State File
+        if: ${{ env.STATE_EXISTS == 'false' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform.tfstate
+          path: terraform/terraform.tfstate
 
       # 3.) STATE_EXISTS is true, so we need to use the State File
       - name: Use Terraform State File
