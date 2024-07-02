@@ -116,7 +116,7 @@ jobs:
 
       - name: Create variable 'TF_CONTENT' 
         id: get_tf_content
-        run: echo ""tf_content=$(cat terraform/ec2.tf)" >> $GITHUB_OUTPUT
+        run: echo "tf_content=$(cat terraform/ec2.tf)" >> $GITHUB_OUTPUT
       
       - name: Write TF_STATE_FILE to file
         run: |
