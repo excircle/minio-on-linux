@@ -111,6 +111,17 @@ jobs:
     if: needs.set-condition.outputs.run-job == 'true'
     runs-on: ubuntu-latest
     steps:
+      - name: "Check if TF_STATE_FILE does not exist"
+        env: 
+            super_secret: ${{ secrets.TF_STATE_FILE }}
+        run: |
+          if [ -z "${{ env.super_secret }}" ]; then
+            echo "TF_STATE_FILE is not set"
+            echo "STATE_EXISTS=false" >> $GITHUB_ENV
+          else
+            echo "TF_STATE_FILE is set"
+            echo "STATE_EXISTS=true" >> $GITHUB_ENV
+          fi
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Run a script
