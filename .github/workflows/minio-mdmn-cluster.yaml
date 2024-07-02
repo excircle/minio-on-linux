@@ -119,19 +119,20 @@ jobs:
       - name: Read TF State File
         id: read_tf_state
         run: |
-          content=$(cat terraform/ec2.tf)
-          echo -e "tf_state_content=$content" >> $GITHUB_ENV
-          echo -e "tf_state_content=$content" >> $GITHUB_OUTPUT
+          content=$(base64 terraform/ec2.tf)
+          echo "TF_STATE_CONTENT=$content" >> $GITHUB_ENV
+          echo "tf_state_content=$content" >> $GITHUB_OUTPUT
         
       - name: Update State File Secret
         uses: gliech/create-github-secret-action@v1
         with:
           name: TF_STATE_FILE
-          value: ${{ env.tf_state_content }}
+          value: ${{ steps.read_tf_state.outputs.tf_state_content }}
           pa_token: ${{ secrets.PA_TOKEN }}
       
-      - name: Write TF_STATE_FILE to file
-        run: echo -e "${{ env.tf_state_content }}" > ./example.txt
+      - name: Decode and Write TF_STATE_FILE to File
+        run: |
+          echo "${{ env.TF_STATE_CONTENT }}" | base64 --decode > ./example.txt
         
       - name: Check Size
         run: ls -lah ./example.txt
