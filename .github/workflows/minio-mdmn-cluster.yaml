@@ -139,3 +139,9 @@ jobs:
       - name: Check wc length
         if: ${{ env.STATE_EXISTS == 'true' }}
         run: cat example.txt | wc -l
+
+      - name: Upload Terraform State File
+        uses: actions/upload-artifact@v3
+        with:
+          name: example.txt
+          path: ./example.txt
