@@ -111,33 +111,24 @@ jobs:
     if: needs.set-condition.outputs.run-job == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: "Check if TF_STATE_FILE does not exist"
-        env: 
-            super_secret: ${{ secrets.TF_STATE_FILE }}
-        run: |
-          if [ -z "${{ env.super_secret }}" ]; then
-            echo "TF_STATE_FILE is not set"
-            echo "STATE_EXISTS=false" >> $GITHUB_ENV
-          else
-            echo "TF_STATE_FILE is set"
-            echo "STATE_EXISTS=true" >> $GITHUB_ENV
-          fi
-      - name: Use Terraform State File
-        if: ${{ env.STATE_EXISTS == 'true' }}
-        run: echo "TF_STATE_FILE=${{ secrets.EC2 }}" >> $GITHUB_ENV
-
+      - name: Create variable 'TF_CONTENT' 
+        id: get_tf_content
+        run: echo "::set-output name=tf_content::$(cat terraform/ec2.tf)"
+        
+      - name: Save State File As Secret
+        uses: gliech/create-github-secret-action@v1
+        with:
+          name: TF_STATE_FILE2
+          value: ${{ steps.get_tf_content.outputs.tf_content }}
+          pa_token: ${{ secrets.PA_TOKEN }}
+      
       - name: Write TF_STATE_FILE to file
-        if: ${{ env.STATE_EXISTS == 'true' }}
-        env:
-          TF_CONTENT: ${{ secrets.EC2 }}
-        run: printf "${{ env.TF_CONTENT }}" > ./example.txt
-
+        run: printf "${{ steps.get_tf_content.outputs.tf_content }}" > ./example.txt
+        
       - name: Check Size
-        if: ${{ env.STATE_EXISTS == 'true' }}
         run: ls -lah ./example.txt
 
       - name: Check wc length
-        if: ${{ env.STATE_EXISTS == 'true' }}
         run: cat example.txt | wc -l
 
       - name: Upload Terraform State File
