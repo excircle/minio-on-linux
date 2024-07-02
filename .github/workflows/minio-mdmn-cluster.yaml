@@ -18,7 +18,6 @@ jobs:
         id: set-output
         run: |
           echo "RUN_JOB=${{ env.destroy }}" >> $GITHUB_OUTPUT
-
   build:
     needs: set-condition
     if: needs.set-condition.outputs.run-job == 'false'
@@ -46,7 +45,6 @@ jobs:
           aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
           aws configure set region $AWS_DEFAULT_REGION
-
       - name: Checkout code
         uses: actions/checkout@v2
         with:
@@ -116,23 +114,23 @@ jobs:
         with:
           ref: ubuntu #<- Define the branch you wish to use.
 
-      - name: Read TF State File
-        id: read_tf_state
-        run: |
-          content=$(base64 terraform/ec2.tf)
-          echo "TF_STATE_CONTENT=$content" >> $GITHUB_ENV
-          echo "tf_state_content=$content" >> $GITHUB_OUTPUT
+      - name: Create variable 'TF_CONTENT' 
+        id: get_tf_content
+        run: echo "::set-output name=tf_content::$(cat terraform/ec2.tf)"
         
-      - name: Update State File Secret
+      - name: Save State File As Secret
         uses: gliech/create-github-secret-action@v1
         with:
-          name: TF_STATE_FILE
-          value: ${{ steps.read_tf_state.outputs.tf_state_content }}
+          name: TF_STATE_FILE2
+          value: ${{ steps.get_tf_content.outputs.tf_content }}
           pa_token: ${{ secrets.PA_TOKEN }}
       
-      - name: Decode and Write TF_STATE_FILE to File
+      - name: Write TF_STATE_FILE to file
         run: |
-          echo "${{ env.TF_STATE_CONTENT }}" | base64 --decode > ./example.txt
+          cat <<EOF > ./example.txt
+          ${{ steps.get_tf_content.outputs.tf_content }}
+          EOF
+
         
       - name: Check Size
         run: ls -lah ./example.txt
