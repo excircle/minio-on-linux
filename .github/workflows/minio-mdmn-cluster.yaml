@@ -128,7 +128,9 @@ jobs:
 
       - name: Write TF_STATE_FILE to file
         if: ${{ env.STATE_EXISTS == 'true' }}
-        run: printf "${{ secrets.EC2 }}" > ./example.txt
+        env:
+          TF_CONTENT: ${{ secrets.EC2 }}
+        run: printf "${{ env.TF_CONTENT }}" > ./example.txt
 
       - name: Check Size
         if: ${{ env.STATE_EXISTS == 'true' }}
