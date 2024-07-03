@@ -11,7 +11,7 @@ resource "aws_key_pair" "access_key" {
 }
 
 resource "aws_instance" "minio_host" {
-  for_each = toset(["one"]) # Creates a EC2 instance per string provided
+  for_each = toset(var.hosts) # Creates a EC2 instance per string provided
 
   ami                         = "ami-03c983f9003cb9cd1" # us-west-2 AMI | Ubuntu 22.04.4 LTS (Jammy Jellyfish)
   instance_type               = "t2.micro"
@@ -19,22 +19,27 @@ resource "aws_instance" "minio_host" {
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.main_vpc_sg.id]
   subnet_id                   = aws_subnet.public.id
-  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name # Attach Profile To allow AWS CLI commands
+  iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name # Attach Profile To allow AWS CLI commands
 
   # MinIO EBS volume
-  ebs_block_device {
-    device_name           = "/dev/sdh"
-    volume_size           = 5 # size of the volume in GB
-    delete_on_termination = true
-    volume_type           = "gp2"
-  }
-  
+  dynamic "ebs_block_device" {
+    for_each = var.disks
+    content {
+      device_name           = "/dev/sd${ebs_block_device.value}"
+      volume_size           = 5
+      delete_on_termination = true
+      volume_type           = "gp2"
+    }
+  }  
 
   # User data script to bootstrap MinIO
-  user_data = file("${path.module}/setup.sh")
+  user_data = base64encode(templatefile("setup.sh", {
+        min-hostname        = "minio-${each.key}"
+        disks               = join(" ", formatlist("xvd%s", var.disks))
+  } ))
 
   tags = {
-    Name     = "minio-host-${each.key}"
+    Name     = "minio-${each.key}"
     CreateBy = "Terraform"
     Owner    = "Alexander Kalaj"
     Purpose  = "MinIO-Training"
