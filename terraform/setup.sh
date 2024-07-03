@@ -13,9 +13,11 @@ SERVER=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --region $REGION
 sudo hostnamectl set-hostname ${min-hostname}
 
 # Establish Disks
+idx=1
 for disk in ${disks}; do
   sudo mkfs.xfs /dev/$disk
-  sudo mkdir -p /mnt/data/$disk
-  sudo mount /dev/$disk /mnt/data/$disk
-  echo "/dev/$disk /mnt/data/$disk xfs defaults,nofail 0 2" | sudo tee -a /etc/fstab
+  sudo mkdir -p /mnt/data$idx
+  sudo mount /dev/$disk /mnt/data$idx
+  echo "/dev/$disk /mnt/data$idx xfs defaults,nofail 0 2" | sudo tee -a /etc/fstab
+  ((idx++))
 done

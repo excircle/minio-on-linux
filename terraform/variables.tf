@@ -4,8 +4,8 @@ variable "sshkey" {
 
 variable "hosts" {
   description = "Number of hosts to create"
-  type = list(string)
-  default = []
+  type = number
+  default = 0
 }
 
 variable "disks" {

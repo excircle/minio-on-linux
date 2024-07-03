@@ -10,8 +10,12 @@ resource "aws_key_pair" "access_key" {
   }
 }
 
+locals {
+  host_names = [for i in range(var.hosts) : "xminio-${i + 1}"]
+}
+
 resource "aws_instance" "minio_host" {
-  for_each = toset(var.hosts) # Creates a EC2 instance per string provided
+  for_each = toset(local.host_names) # Creates a EC2 instance per string provided
 
   ami                         = "ami-03c983f9003cb9cd1" # us-west-2 AMI | Ubuntu 22.04.4 LTS (Jammy Jellyfish)
   instance_type               = "t2.micro"
@@ -34,12 +38,12 @@ resource "aws_instance" "minio_host" {
 
   # User data script to bootstrap MinIO
   user_data = base64encode(templatefile("setup.sh", {
-        min-hostname        = "minio-${each.key}"
+        min-hostname        = "${each.key}"
         disks               = join(" ", formatlist("xvd%s", var.disks))
   } ))
 
   tags = {
-    Name     = "minio-${each.key}"
+    Name     = "${each.key}"
     CreateBy = "Terraform"
     Owner    = "Alexander Kalaj"
     Purpose  = "MinIO-Training"
