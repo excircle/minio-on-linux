@@ -38,8 +38,10 @@ resource "aws_instance" "minio_host" {
 
   # User data script to bootstrap MinIO
   user_data = base64encode(templatefile("setup.sh", {
-        min-hostname        = "${each.key}"
+        node_name           = "${each.key}"
         disks               = join(" ", formatlist("xvd%s", var.disks))
+        host_count          = length(local.host_names)
+        disk_count          = length(var.disks)
   } ))
 
   tags = {
