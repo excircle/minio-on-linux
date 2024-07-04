@@ -11,7 +11,7 @@ resource "aws_key_pair" "access_key" {
 }
 
 locals {
-  host_names = [for i in range(var.hosts) : "xminio-${i + 1}"]
+  host_names = [for i in range(var.hosts) : "minio-${i + 1}"]
 }
 
 resource "aws_instance" "minio_host" {
@@ -42,6 +42,7 @@ resource "aws_instance" "minio_host" {
         disks               = join(" ", formatlist("xvd%s", var.disks))
         host_count          = length(local.host_names)
         disk_count          = length(var.disks)
+        hosts               = join(" ", local.host_names)
   } ))
 
   tags = {
@@ -49,6 +50,7 @@ resource "aws_instance" "minio_host" {
     CreateBy = "Terraform"
     Owner    = "Alexander Kalaj"
     Purpose  = "MinIO-Training"
+    Group    = "MinIO"
   }
 }
 
@@ -80,9 +82,4 @@ resource "aws_security_group" "main_vpc_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-}
-
-# Print IP Addresses
-output "public_ip_address" {
-  value = { for key, instance in aws_instance.minio_host : key => instance.public_ip }
 }

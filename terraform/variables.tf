@@ -5,11 +5,11 @@ variable "sshkey" {
 variable "hosts" {
   description = "Number of hosts to create"
   type = number
-  default = 0
+  default = 2
 }
 
 variable "disks" {
   description = "DO NOT EXCEED 4 DISKS"
   type = list(string)
-  default = ["h", "i"] # Full disks: ["h", "i", "j", "k"]
+  default = ["h", "i", "j", "k"] # Full disks: ["h", "i", "j", "k"]
 }

@@ -36,3 +36,4 @@ terraform.rc
 terraform/tfplan
 terraform/.terraform
 terraform/.terraform.lock.hcl
+terraform/hosts.txt
