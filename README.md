@@ -12,6 +12,7 @@ The branches of this repository feature Terraform projects which implements MinI
 | - | - |
 | [`main`](https://github.com/excircle/minio-on-linux/tree/main) | Defaults to MinIO on Ubuntu-based EC2 instance (Ubuntu 22.04.4 LTS <i>Jammy Jellyfish</i>) |
 | [`ubuntu`](https://github.com/excircle/minio-on-linux/tree/ubuntu) | Identical to main branch |
+| [`ubuntu-cluster`](https://github.com/excircle/minio-on-linux/tree/ubuntu-cluster) | MinIO on Ubuntu-based EC2 cluster (Ubuntu 22.04.4 LTS <i>Jammy Jellyfish</i>) |
 | [`debian`](https://github.com/excircle/minio-on-linux/tree/debian) | MinIO on Debian-based EC2 instance (Debian 12 <i>Bookworm</i>) |
 
 # Overview
