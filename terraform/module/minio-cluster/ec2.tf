@@ -1,12 +1,12 @@
 resource "aws_key_pair" "access_key" {
-  key_name   = "akalaj-min-key"
+  key_name   = var.ec2_key_name
   public_key = var.sshkey # This key is provided via TF vars on the command line
 
   tags = {
-    Name     = "ec2 key"
-    CreateBy = "Terraform"
-    Owner    = "Alexander Kalaj"
-    Purpose  = "MinIO-Training"
+    Name      = var.ec2_keypair_tag_name
+    CreatedBy = var.createdby_tag
+    Owner     = var.owner_tag
+    Purpose   = var.purpose_tag
   }
 }
 
@@ -17,8 +17,8 @@ locals {
 resource "aws_instance" "minio_host" {
   for_each = toset(local.host_names) # Creates a EC2 instance per string provided
 
-  ami                         = "ami-03c983f9003cb9cd1" # us-west-2 AMI | Ubuntu 22.04.4 LTS (Jammy Jellyfish)
-  instance_type               = "t2.micro"
+  ami                         = var.ec2_ami_image
+  instance_type               = var.ec2_instance_type
   key_name                    = aws_key_pair.access_key.key_name
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.main_vpc_sg.id]
@@ -30,14 +30,14 @@ resource "aws_instance" "minio_host" {
     for_each = var.disks
     content {
       device_name           = "/dev/sd${ebs_block_device.value}"
-      volume_size           = 5
-      delete_on_termination = true
-      volume_type           = "gp2"
+      volume_size           = var.ebs_volume_size
+      delete_on_termination = var.delete_ebs_on_termination
+      volume_type           = var.ebs_volume_type
     }
   }  
 
   # User data script to bootstrap MinIO
-  user_data = base64encode(templatefile("setup.sh", {
+  user_data = base64encode(templatefile("${path.module}/setup.sh", {
         node_name           = "${each.key}"
         disks               = join(" ", formatlist("xvd%s", var.disks))
         host_count          = length(local.host_names)
@@ -46,17 +46,17 @@ resource "aws_instance" "minio_host" {
   } ))
 
   tags = {
-    Name     = "${each.key}"
-    CreateBy = "Terraform"
-    Owner    = "Alexander Kalaj"
-    Purpose  = "MinIO-Training"
-    Group    = "MinIO"
+    Name      = "${each.key}"
+    CreatedBy = var.createdby_tag
+    Owner     = var.owner_tag
+    Purpose   = var.purpose_tag
+    Group     = var.group_tag
   }
 }
 
 
 resource "aws_security_group" "main_vpc_sg" {
-  name   = "minio-test-sg"
+  name   = var.aws_security_group_name
   vpc_id = aws_vpc.main.id
   ingress {
     from_port   = 22
